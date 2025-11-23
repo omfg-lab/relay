@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+// Replace with your real webhook
+const WEBHOOK = "https://stoic-logins.app.n8n.cloud/webhook/24f33c25-480c-4a17-9ddb-0d6557ea1922";
+
+window.addEventListener("message", async (event) => {
+    const { html, title, url } = event.data || {};
+
+    try {
+        await fetch(WEBHOOK, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ html, title, url })
+        });
+        document.body.innerHTML = "<h2>Sent successfully!</h2>";
+    } catch (e) {
+        document.body.innerHTML = "<h2>Failed: " + e.message + "</h2>";
+    }
+}, false);
+</script>
+</body>
+</html>
