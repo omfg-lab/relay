@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html>
 <body>
+<h2>LinkedIn Job Relay</h2>
+<p id="status">Waiting for jobs...</p>
 <script>
 const WEBHOOK = "https://new-stoic.app.n8n.cloud/webhook/24f33c25-480c-4a17-9ddb-0d6557ea1922";
+
+if (window.opener) {
+  window.opener.postMessage('ready', '*');
+}
+
 window.addEventListener("message", async (event) => {
-    const { jobs, title, url } = event.data || {};
-    
-    try {
-        await fetch(WEBHOOK, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ jobs, title, url })
-        });
-        document.body.innerHTML = "<h2>Sent successfully!</h2><p>Sent " + (jobs ? jobs.length : 0) + " job(s) to webhook</p>";
-    } catch (e) {
-        document.body.innerHTML = "<h2>Failed: " + e.message + "</h2>";
-    }
+  const data = event.data;
+  if (!data || !data.jobs) return;
+  document.getElementById('status').textContent = `Sending ${data.jobs.length} job(s)...`;
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    const result = await res.text();
+    document.getElementById('status').textContent = `Done! Sent ${data.jobs.length} job(s). n8n said: ${result}`;
+  } catch (e) {
+    document.getElementById('status').textContent = `Fetch failed: ${e.message}`;
+  }
 }, false);
 </script>
 </body>
