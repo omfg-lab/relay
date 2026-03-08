@@ -1,66 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body { 
-      font-family: system-ui; 
-      padding: 40px; 
-      max-width: 600px; 
-      margin: 0 auto; 
-    }
-    h2 { color: #0a66c2; }
-    .success { color: #057642; }
-    .info { 
-      color: #666; 
-      margin-top: 10px; 
-      line-height: 1.6;
-    }
-  </style>
-</head>
 <body>
-  <h2>Processing jobs...</h2>
-  <script>
-    const WEBHOOK = "https://new-stoic.app.n8n.cloud/webhook/24f33c25-480c-4a17-9ddb-0d6557ea1922";
+<script>
+const WEBHOOK = "https://new-stoic.app.n8n.cloud/webhook/24f33c25-480c-4a17-9ddb-0d6557ea1922";
+window.addEventListener("message", async (event) => {
+    const { jobs, title, url } = event.data || {};
     
-    window.addEventListener("message", async (event) => {
-      const { jobs, title, url } = event.data || {};
-      
-      if (!jobs || jobs.length === 0) {
-        document.body.innerHTML = '<h2 style="color: red;">❌ No jobs received</h2>';
-        return;
-      }
-      
-      try {
-        const response = await fetch(WEBHOOK, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobs, title, url })
+    try {
+        await fetch(WEBHOOK, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ jobs, title, url })
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        document.body.innerHTML = `
-          <h2 class="success">✅ ${result.message}</h2>
-          <div class="info">
-            <p><strong>New jobs added:</strong> ${result.uniqueCount}</p>
-            <p><strong>Duplicates skipped:</strong> ${result.duplicates}</p>
-            <p><strong>Total received:</strong> ${result.totalReceived}</p>
-          </div>
-          <p style="margin-top: 20px; color: #999; font-size: 14px;">
-            You can close this tab now.
-          </p>
-        `;
-      } catch (e) {
-        document.body.innerHTML = `
-          <h2 style="color: red;">❌ Failed</h2>
-          <p>${e.message}</p>
-        `;
-      }
-    }, false);
-  </script>
+        document.body.innerHTML = "<h2>Sent successfully!</h2><p>Sent " + (jobs ? jobs.length : 0) + " job(s) to webhook</p>";
+    } catch (e) {
+        document.body.innerHTML = "<h2>Failed: " + e.message + "</h2>";
+    }
+}, false);
+</script>
 </body>
 </html>
